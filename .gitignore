@@ -1,0 +1,4 @@
+*.swp
+.vscode
+manager.ps1
+.vs
