@@ -1,16 +1,23 @@
 param(
-	[string] $packagePath,
+	[String] $packagePath,
+	[String] $templatePath,
 	[string] $githubRepo,
 	[switch] $Force,
 	[switch] $Alpha,
 	[switch] $Nightly,
-	[string] $Regex32bit = '',
-	[string] $Regex64bit = '',
-	[string] $packageName = '',
-	[string] $templatePath = ''
+	[string] $Regex32bit,
+	[string] $Regex64bit,
+	[string] $packageName
 )
 
 $ErrorActionPreference = "stop"
+
+# set the workspace location
+$workspaceLocation = Split-Path $myInvocation.MyCommand.Definition -Parent
+
+# turn all the path to full path to avoid confusion
+$packagePath = [System.IO.Path]::GetFullPath($packagePath)
+$templatePath = [System.IO.Path]::GetFullPath($templatePath)
 
 # translate all the path
 $tempDir = "$HOME\AppData\Local\Temp"
@@ -21,62 +28,11 @@ if([string]::IsNullOrEmpty($templatePath)){
 if ([string]::IsNullOrEmpty($packageName)) {
 	$packageName = Split-Path -Path $packagePath -Leaf
 }
-# turn all the path to full path to avoid confusion
-$packagePath = [System.IO.Path]::GetFullPath($packagePath)
-$templatePath = [System.IO.Path]::GetFullPath($templatePath)
 
-# get github url
-$githubUrl = "https://api.github.com/repos/$githubRepo/releases/latest"
-
-
-function Get-RemoteRelease {
-    $webClient = New-Object Net.WebClient
-    $webClient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
-    $Release = ConvertFrom-Json $($webClient.DownloadString($githubUrl))
-	Write-Host ''
-    Write-Host 'successfull fetched the remote' -ForegroundColor Green
-
-    # return
-    $Release
-}
-
-function Get-RemoteVersion ($remoteRelease) {
-	$tag = $remoteRelease.tag_name.toLower()
-	$version = $tag.Replace('v', '')
-	Write-Host ''
-	Write-Host "successfully get the version of the remote, the version is $version" -ForegroundColor Green 
-
-	# return
-	$version
-}
-
-function Get-LocalVersion {
-	if (Test-Path "$packagePath\latest_version.txt") {
-		$version = Get-Content "$packagePath\latest_version.txt"
-		Write-Host ''
-		Write-Host 'successfully get the local version' -ForegroundColor Green
-		Write-Host 'the local version is: ' -NoNewline -ForegroundColor Yellow
-		Write-Host $version
-	}
-	else {
-		Write-Warning 'no latest version file found'
-		Write-Host 'use version 0.0.0 to continue' -ForegroundColor Green
-	}
-    
-
-	# return
-	$version
-    
-}
-
-function Get-NuspecTemplate {
-    $xml = [xml] $(Get-Content "$templatePath\$packageName.nuspec")
-	Write-Host ''
-    Write-Host 'successfull get the template file' -ForegroundColor Green
-    
-    # return
-    $xml
-}
+# load other modules
+. $workspaceLocation/nuspecGen.ps1
+. $workspaceLocation/remoteHandler.ps1 -githubRepo $githubRepo
+. $workspaceLocation/localHandler.ps1 -packagePath $packagePath -templatePath $templatePath -packageName $packageName
 
 function New-Tools ($Path, $release) {
 	# get the package url
@@ -160,40 +116,7 @@ function New-Tools ($Path, $release) {
 	$installStr | Out-File "$Path\chocolateyinstall.ps1" -Encoding utf8
 }
 
-function New-NuspecFile($Path, $version, $releaseNote, $description) {
-	$template = Get-NuspecTemplate
 
-	# set value
-	$template.package.metadata.description = $description
-	$template.package.metadata.releaseNotes = $releaseNote
-	# set version
-	if ($Nightly) {
-		$template.package.metadata.version = "$version-nightly"
-	}
-	elseif ($Alpha) {
-		$template.package.metadata.version = "$version-alpha"
-	}
-	else {
-		$template.package.metadata.version = "$version"	
-	}
-
-	$template.Save("$Path\$packageName.nuspec")
-}
-
-function New-Package ($release, $version, $releaseNote, $description) {
-	# create the path
-	$newPackagePath = "$packagePath\$version"
-	# use out-null to redirect the output to null. (do not show out put)
-	New-Item $newPackagePath -ItemType Directory -Force -Confirm:$false | Out-Null
-	New-Item "$newPackagePath\tools" -ItemType Directory -Force -Confirm:$false | Out-Null
-	
-	# create install scripts
-	New-Tools -path "$newPackagePath\tools" -release $release
-	New-NuspecFile -path $newPackagePath -version $version -releaseNote $releaseNote -description $description
-
-	# change the latest version
-	$version | Out-File "$packagePath\latest_version.txt" -Encoding utf8
-}
 
 
 
