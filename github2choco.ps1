@@ -1,11 +1,9 @@
 param(
     [string] $command,
     [string] $githubRepo,
+	[string] $packageName,
     [switch] $All,
     [switch] $Force,
-	[string] $packagePath,
-	[string] $templatePath,
-	[string] $packageName,
 	[switch] $Alpha,
 	[switch] $Nightly
 )
@@ -31,4 +29,10 @@ $templatePath = [System.IO.Path]::GetFullPath($templatePath)
 
 # load modules
 . $workspaceLocation\zipPackageWriter.ps1
+
+
+# update zip package
+if ($command -eq 'update') {
+	Write-ZipPackage -packageName $packageName
+}
 

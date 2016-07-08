@@ -4,38 +4,48 @@
 . $workspaceLocation\nuspecGen.ps1
 . $workspaceLocation\toolsGen.ps1
 
-function New-Package ($release, $version, $releaseNote) {
+function New-VersionPackage ($release, $newVersion, $releaseNote) {
 	# create the path
-	$newPackagePath = "$packagePath\$version"
+	$newPackagePath = "$packagePath\$newVersion"
 	# use out-null to redirect the output to null. (do not show out put)
 	New-Item $newPackagePath -ItemType Directory -Force -Confirm:$false | Out-Null
 	New-Item "$newPackagePath\tools" -ItemType Directory -Force -Confirm:$false | Out-Null
 	
 	# create install scripts
 	New-Tools -path "$newPackagePath\tools" -release $release
-	New-NuspecFile -path $newPackagePath -version $version -releaseNote $releaseNote
+	New-NuspecFile -path $newPackagePath -version $newVersion -releaseNote $releaseNote
 
 	# change the latest version
-	$version | Out-File "$packagePath\latest_version.txt" -Encoding utf8
+	$newVersion | Out-File "$packagePath\latest_version.txt" -Encoding utf8
 }
 
-function Write-ZipPackage($githubRepo, $packageName) {
-	$release = Get-RemoteRelease -githubRepo $githubRepo
+function Write-ZipPackage($packageName) {
+	
+	# load variable
 	$profile = Read-Profile
-	$remoteVersion = Get-RemoteVersion -remoteRelease $release
 	$localVersion = $profile.$packageName.version
+	$githubRepo = $profile.$packageName.githubRepo
+	$release = Get-RemoteRelease -githubRepo $githubRepo
+	$remoteVersion = Get-RemoteVersion -remoteRelease $release
+
+	# execute if not force
 	if (-Not $Force) {
 		if($remoteVersion -ne $localVersion) {
 			$releaseNote = $release.body.replace("\n", "`r`n")
-			New-Package -release $release -version $remoteVersion -releaseNote $releaseNote
+			New-VersionPackage -release $release -version $remoteVersion -releaseNote $releaseNote
 		}
 		else {
 			Write-Host 'remote and local version match, exiting...' -ForegroundColor Green
 		}
 	}
+	# force execute
 	else {
 		Write-Warning 'Force executing'
 		$releaseNote = $release.body.replace("\n", "`r`n")
-		New-Package -release $release -version $remoteVersion -releaseNote $releaseNote -description $description
+		New-VersionPackage -release $release -version $remoteVersion -releaseNote $releaseNote -description $description
 	}
+
+	# update the profile
+	$profile.$packageName.version = $remoteVersion
+	Save-Profile -localProfile $profile
 }
