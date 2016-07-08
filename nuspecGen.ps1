@@ -1,13 +1,24 @@
-function New-NuspecFile($Path, $version, $releaseNote) {
-	$template = Get-NuspecTemplate
+. $workspaceLocation\localHandler.ps1
+
+function Get-NuspecTemplate($templatePath, $packageName) {
+    $xml = [xml] $(Get-Content "$templatePath\$packageName.nuspec")
+	Write-Host ''
+    Write-Host 'successfull get the template file' -ForegroundColor Green
+    
+    # return
+    $xml
+}
+
+function Write-NuspecFile($Path, $packageName, $templatePath, $version, $releaseNote, $pre) {
+	$template = Get-NuspecTemplate -packageName $packageName -templatePath $templatePath
 
 	# set value
 	$template.package.metadata.releaseNotes = $releaseNote
 	# set version
-	if ($Nightly) {
+	if ($pre -eq 'nightly') {
 		$template.package.metadata.version = "$version-nightly"
 	}
-	elseif ($Alpha) {
+	elseif ($pre -eq 'alpha') {
 		$template.package.metadata.version = "$version-alpha"
 	}
 	else {
