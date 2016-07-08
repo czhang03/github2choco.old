@@ -4,7 +4,13 @@
 . $workspaceLocation\nuspecGen.ps1
 . $workspaceLocation\toolsGen.ps1
 
-function New-VersionPackage ($release, $newVersion, $releaseNote) {
+function New-VersionPackage ($profile, $release, $packageName, $newVersion, $releaseNote) {
+	# load info from the local profile
+	$Regex32bit = $profile.$packageName.Regex32bit
+	$Regex64bit = $profile.$packageName.Regex64bit
+	$packagePath = $profile.$packageName.packagePath
+	$templatePath = $profile.$packageName.templatePath
+
 	# create the path
 	$newPackagePath = "$packagePath\$newVersion"
 	# use out-null to redirect the output to null. (do not show out put)
@@ -12,17 +18,17 @@ function New-VersionPackage ($release, $newVersion, $releaseNote) {
 	New-Item "$newPackagePath\tools" -ItemType Directory -Force -Confirm:$false | Out-Null
 	
 	# create install scripts
-	New-Tools -path "$newPackagePath\tools" -release $release
-	New-NuspecFile -path $newPackagePath -version $newVersion -releaseNote $releaseNote
+	Write-Tools -path "$newPackagePath\tools" -release $release -Regex32bit $Regex32bit -Regex64bit $Regex64bit
+	Write-NuspecFile -path $newPackagePath -packageName $packageName -version $newVersion -releaseNote $releaseNote -templatePath $templatePath
 
 	# change the latest version
 	$newVersion | Out-File "$packagePath\latest_version.txt" -Encoding utf8
 }
 
-function Write-ZipPackage($packageName) {
+function Update-ZipPackage($packageName, $Force) {
 	
 	# load variable
-	$profile = Read-Profile
+	$profile = Read-LocalPrfile
 	$localVersion = $profile.$packageName.version
 	$githubRepo = $profile.$packageName.githubRepo
 	$release = Get-RemoteRelease -githubRepo $githubRepo
@@ -32,7 +38,7 @@ function Write-ZipPackage($packageName) {
 	if (-Not $Force) {
 		if($remoteVersion -ne $localVersion) {
 			$releaseNote = $release.body.replace("\n", "`r`n")
-			New-VersionPackage -release $release -version $remoteVersion -releaseNote $releaseNote
+			New-VersionPackage -profile $profile -release $release -newVersion $remoteVersion -releaseNote $releaseNote -packageName $packageName
 		}
 		else {
 			Write-Host 'remote and local version match, exiting...' -ForegroundColor Green
@@ -42,7 +48,7 @@ function Write-ZipPackage($packageName) {
 	else {
 		Write-Warning 'Force executing'
 		$releaseNote = $release.body.replace("\n", "`r`n")
-		New-VersionPackage -release $release -version $remoteVersion -releaseNote $releaseNote -description $description
+		New-VersionPackage -profile $profile -release $release -newVersion $remoteVersion -releaseNote $releaseNote -packageName $packageName
 	}
 
 	# update the profile
