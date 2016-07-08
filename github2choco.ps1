@@ -2,6 +2,7 @@ param(
     [string] $command,
     [string] $githubRepo,
 	[string] $packageName,
+	[string] $packageType,
     [switch] $All,
     [switch] $Force,
 	[switch] $Alpha,
