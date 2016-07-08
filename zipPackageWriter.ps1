@@ -27,8 +27,6 @@ function Write-ZipPackage($githubRepo, $packageName) {
 	if (-Not $Force) {
 		if($remoteVersion -ne $localVersion) {
 			$releaseNote = $release.body.replace("\n", "`r`n")
-			$nuspecTemplate = Get-NuspecTemplate
-			$description = $nuspecTemplate.package.metadata.description
 			New-Package -release $release -version $remoteVersion -releaseNote $releaseNote
 		}
 		else {
@@ -38,8 +36,6 @@ function Write-ZipPackage($githubRepo, $packageName) {
 	else {
 		Write-Warning 'Force executing'
 		$releaseNote = $release.body.replace("\n", "`r`n")
-		$nuspecTemplate = Get-NuspecTemplate
-		$description = $nuspecTemplate.package.metadata.description
 		New-Package -release $release -version $remoteVersion -releaseNote $releaseNote -description $description
 	}
 }
