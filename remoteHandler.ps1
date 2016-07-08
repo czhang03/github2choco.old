@@ -1,10 +1,5 @@
-param (
-	[string] $githubRepo
-)
-
-$githubUrl = "https://api.github.com/repos/$githubRepo/releases/latest"
-
-function Get-RemoteRelease {
+function Get-RemoteRelease($githubRepo) {
+	$githubUrl = "https://api.github.com/repos/$githubRepo/releases/latest"
     $webClient = New-Object Net.WebClient
     $webClient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
     $Release = ConvertFrom-Json $($webClient.DownloadString($githubUrl))

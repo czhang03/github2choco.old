@@ -1,9 +1,3 @@
-param(
-    [string] $packagePath,
-    [string] $templatePath,
-    [string] $packageName
-)
-
 function Get-LocalVersion {
 	if (Test-Path "$packagePath\latest_version.txt") {
 		$version = Get-Content "$packagePath\latest_version.txt"
