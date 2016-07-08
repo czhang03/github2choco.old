@@ -1,8 +1,7 @@
-function New-NuspecFile($Path, $version, $releaseNote, $description) {
+function New-NuspecFile($Path, $version, $releaseNote) {
 	$template = Get-NuspecTemplate
 
 	# set value
-	$template.package.metadata.description = $description
 	$template.package.metadata.releaseNotes = $releaseNote
 	# set version
 	if ($Nightly) {
