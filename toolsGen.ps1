@@ -1,3 +1,7 @@
+. $workspaceLocation\localHandler.ps1
+
+$tempDir = "$HOME\AppData\local\temp"
+
 function Get-DownloadUrl ($release, $Regex32bit, $Regex64bit) {
     # get the package assets
 	$assets = $release.assets
@@ -39,8 +43,33 @@ function Get-DownloadUrl ($release, $Regex32bit, $Regex64bit) {
     $Url64, $Url32
 }
 
-function Get-FileHash ($Url64, $Url32) {
-	# download the installer to get the hash
+function Get-32bitInstallerHash ($Url32) {
+
+	if($Url32) {
+		# download the 32 bit package
+		Write-Host 'Downloading 32 bit package to find the hash...'
+		$downloadFileName = "$tempDir\$packageName.x32.installer"
+		$webclient = New-Object net.webclient
+		$webclient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
+		$webclient.DownloadFile($Url32, $downloadFileName)
+		$Hash32 = (Get-FileHash -Path $downloadFileName -Algorithm SHA256).hash
+		Write-Host 'successfully get hash of 32bit package' -ForegroundColor Green
+		Write-Host 'the sha256 hash of 32bit package is: ' -NoNewline -ForegroundColor Yellow
+		Write-Host $Hash32
+	}
+	else {
+		Write-Host ''
+		Write-Warning '32 bit package not found' 
+		Read-Host 'Press enter to continue, press Ctrl-C to stop'
+		$Hash32 = ''
+	}
+
+    # return
+    $Hash32
+}
+
+
+function Get-64bitInstallerHash ($Url64) {
 	if($Url64) {
 		# download the 64 bit package
 		Write-Host 'Downloading 64 bit package to find the hash...' -ForegroundColor Green
@@ -56,28 +85,12 @@ function Get-FileHash ($Url64, $Url32) {
 	else{
 		Write-Host
 		Write-Warning '64 bit package not found' 
-		Read-Host 'Press enter to continue, press Ctrl-C to stop'	
-	}
-	if($Url32) {
-		# download the 64 bit package
-		Write-Host 'Downloading 32 bit package to find the hash...'
-		$downloadFileName = "$tempDir\$packageName.x32.installer"
-		$webclient = New-Object net.webclient
-		$webclient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
-		$webclient.DownloadFile($Url32, $downloadFileName)
-		$Hash32 = (Get-FileHash -Path $downloadFileName -Algorithm SHA256).hash
-		Write-Host 'successfully get hash of 32bit package' -ForegroundColor Green
-		Write-Host 'the sha256 hash of 32bit package is: ' -NoNewline -ForegroundColor Yellow
-		Write-Host $Hash32
-	}
-	else {
-		Write-Host ''
-		Write-Warning '32 bit package not found' 
-		Read-Host 'Press enter to continue, press Ctrl-C to stop'	
+		Read-Host 'Press enter to continue, press Ctrl-C to stop'
+		$Hash64 = ''	
 	}
 
     # return
-    $Hash64, $Hash32
+    $Hash64
 }
 
 function New-InstallString ($Url64, $Url32, $Hash64, $Hash32) {
@@ -98,7 +111,8 @@ function New-InstallString ($Url64, $Url32, $Hash64, $Hash32) {
 function Write-Tools ($Path, $release, $Regex32bit, $Regex64bit) {
 	# get the download url
 	$Url64, $Url32 = Get-DownloadUrl -release $release -Regex32bit $Regex32bit -Regex64bit $Regex64bit
-	$Hash64, $Hash32 = Get-FileHash -Url64 $Url64 -Url32 $Url32
+	$Hash32 = Get-32bitInstallerHash -Url32 $Url32
+	$Hash64 = Get-64bitInstallerHash -Url64 $Url64 
 	$installStr = New-InstallString -Url64 $Url64 -Url32 $Url32 -Hash64 $Hash64 -Hash32 $Hash32
     $installStr | Out-File "$Path\chocolateyinstall.ps1" -Encoding utf8
 }
