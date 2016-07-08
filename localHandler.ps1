@@ -1,27 +1,47 @@
-function Get-LocalVersion {
-	if (Test-Path "$packagePath\latest_version.txt") {
-		$version = Get-Content "$packagePath\latest_version.txt"
-		Write-Host ''
-		Write-Host 'successfully get the local version' -ForegroundColor Green
-		Write-Host 'the local version is: ' -NoNewline -ForegroundColor Yellow
-		Write-Host $version
+function Read-LocalPrfile {
+	Write-Host ''
+	$profilePath = Split-Path $myInvocation.MyCommand.Definition -Parent
+	$profileFullName = "$profilePath\profile.json"
+	if (Test-Path $profileFullName) {
+		Write-Host 'profile found' -ForegroundColor Green	
+		$profile = Get-Content $profileFullName
 	}
 	else {
-		Write-Warning 'no latest version file found'
-		Write-Host 'use version 0.0.0 to continue' -ForegroundColor Green
+		Write-Host 'Profile Not Found, starting with an empty profile'
+		$profile = New-Object -TypeName psobject
 	}
-    
 
-	# return
-	$version
-    
+	#return
+	$profile
 }
 
-function Get-NuspecTemplate {
+function Get-LocalVersion($localProfile, $packageName) {
+	# return
+	$localProfile.$packageName.version
+}
+
+function Get-PackagePath ($localProfile, $packageName) {
+	#return
+	$localProfile.$packageName.packagePath
+}
+
+function Get-GithubRepo ($localRelease, $packageName) {
+	#return
+	$localProfile.$packageName.githubRepo
+}
+
+function Get-NuspecTemplate($profile, $packageName) {
+	$templatePath = $localProfile.$packageName.templatePath
     $xml = [xml] $(Get-Content "$templatePath\$packageName.nuspec")
 	Write-Host ''
     Write-Host 'successfull get the template file' -ForegroundColor Green
     
     # return
     $xml
+}
+
+function Save-Profile($localProfile) {
+	$profilePath = Split-Path $myInvocation.MyCommand.Definition -Parent
+	$profileFullName = "$profilePath\profile.json"
+	ConvertFrom-Json $localProfile | Out-File $profileFullName -Encoding utf8
 }
