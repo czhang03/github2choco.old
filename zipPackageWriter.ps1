@@ -14,6 +14,7 @@ function New-VersionPackage ($profile, $release, $packageName) {
 	$Regex64bit = $profile.$packageName.Regex64bit
 	$packagePath = $profile.$packageName.packagePath
 	$templatePath = $profile.$packageName.templatePath
+	$pre = $profile.$packageName.pre
 
 	# create the path
 	$newPackagePath = "$packagePath\$newVersion"
@@ -23,7 +24,7 @@ function New-VersionPackage ($profile, $release, $packageName) {
 	
 	# create install scripts
 	Write-Tools -path "$newPackagePath\tools" -release $release -Regex32bit $Regex32bit -Regex64bit $Regex64bit
-	Write-NuspecFile -path $newPackagePath -packageName $packageName -version $newVersion -releaseNote $releaseNote -templatePath $templatePath
+	Write-NuspecFile -path $newPackagePath -packageName $packageName -version $newVersion -releaseNote $releaseNote -templatePath $templatePath -pre $pre
 
 	# change the latest version
 	$newVersion | Out-File "$packagePath\latest_version.txt" -Encoding utf8
