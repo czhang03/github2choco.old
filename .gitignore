@@ -1,4 +1,4 @@
 *.swp
 .vscode
-manager.ps1
+profile.json
 .vs
