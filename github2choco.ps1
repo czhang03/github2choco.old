@@ -1,5 +1,8 @@
 param(
+	[Parameter(Mandatory=$true, Position=0)]
+	[ValidateSet('new', 'update')]
     [string] $command,
+	[Parameter(Mandatory=$false, Position=1)]
 	[string] $package,
 	[string] $packageType,
     [switch] $All,
