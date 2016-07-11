@@ -45,9 +45,15 @@ if ($command -eq 'new') {
 if ($command -eq 'update') {
 	# package is the package name, not github repo name
 	$packageName = $package
-
-	# do the work here
-	Update-ZipPackage -packageName $packageName -Force $Force
+	if ($all) {
+		# do the work here
+		Update-AllZipPackage -Force $Force
+	}
+	else {
+		# do the work here
+		Update-ZipPackage -packageName $packageName -Force $Force
+	}
+	
 	
 }
 

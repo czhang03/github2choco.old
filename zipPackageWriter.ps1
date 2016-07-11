@@ -57,3 +57,39 @@ function Update-ZipPackage($packageName, $Force) {
 	$profile.$packageName.version = $remoteVersion
 	Save-Profile -localProfile $profile
 }
+
+function Update-AllZipPackage ($Force) {
+    # load profile
+	$profile = Read-LocalPrfile
+	$properties = $profile | get-member -type NoteProperty
+	$packageNames = $properties | foreach {$_.Name}
+	
+	foreach ($packageName in $packageNames) {
+		if ($profile.$packageName.packageType = 'zip') {
+			# load variable
+			$localVersion = $profile.$packageName.version
+			$githubRepo = $profile.$packageName.githubRepo
+			$release = Get-RemoteRelease -githubRepo $githubRepo
+			$remoteVersion = Get-RemoteVersion -remoteRelease $release
+
+			# execute if not force
+			if (-Not $Force) {
+				if($remoteVersion -ne $localVersion) {
+					New-VersionPackage -profile $profile -release $release -packageName $packageName
+				}
+				else {
+					Write-Host 'remote and local version match, exiting...' -ForegroundColor Green
+				}
+			}
+			# force execute
+			else {
+				Write-Warning 'Force executing'
+				New-VersionPackage -profile $profile -release $release -packageName $packageName
+			}
+
+			# update the profile
+			$profile.$packageName.version = $remoteVersion
+			Save-Profile -localProfile $profile
+		}
+	}
+}
