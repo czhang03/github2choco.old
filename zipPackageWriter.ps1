@@ -4,7 +4,11 @@
 . $workspaceLocation\nuspecGen.ps1
 . $workspaceLocation\toolsGen.ps1
 
-function New-VersionPackage ($profile, $release, $packageName, $newVersion, $releaseNote) {
+function New-VersionPackage ($profile, $release, $packageName) {
+	# load info from remote release
+	$newVersion = Get-RemoteVersion -remoteRelease $release
+	$releaseNote = $release.body.replace("\n", "`r`n")
+
 	# load info from the local profile
 	$Regex32bit = $profile.$packageName.Regex32bit
 	$Regex64bit = $profile.$packageName.Regex64bit
@@ -37,8 +41,7 @@ function Update-ZipPackage($packageName, $Force) {
 	# execute if not force
 	if (-Not $Force) {
 		if($remoteVersion -ne $localVersion) {
-			$releaseNote = $release.body.replace("\n", "`r`n")
-			New-VersionPackage -profile $profile -release $release -newVersion $remoteVersion -releaseNote $releaseNote -packageName $packageName
+			New-VersionPackage -profile $profile -release $release -packageName $packageName
 		}
 		else {
 			Write-Host 'remote and local version match, exiting...' -ForegroundColor Green
@@ -47,8 +50,7 @@ function Update-ZipPackage($packageName, $Force) {
 	# force execute
 	else {
 		Write-Warning 'Force executing'
-		$releaseNote = $release.body.replace("\n", "`r`n")
-		New-VersionPackage -profile $profile -release $release -newVersion $remoteVersion -releaseNote $releaseNote -packageName $packageName
+		New-VersionPackage -profile $profile -release $release -packageName $packageName
 	}
 
 	# update the profile
