@@ -5,6 +5,7 @@
 . $workspaceLocation\toolsGen.ps1
 
 function New-VersionPackage ($profile, $release, $packageName) {
+	
 	# load info from remote release
 	$newVersion = Get-RemoteVersion -remoteRelease $release
 	$releaseNote = $release.body.replace("\n", "`r`n")
@@ -32,6 +33,9 @@ function New-VersionPackage ($profile, $release, $packageName) {
 
 function Update-ZipPackage($packageName, $Force) {
 	
+	# log
+	Write-Host "updating $packageName" -ForegroundColor Magenta
+
 	# load variable
 	$profile = Read-LocalPrfile
 	$localVersion = $profile.$packageName.version
@@ -66,6 +70,10 @@ function Update-AllZipPackage ($Force) {
 	$packageNames = $properties | foreach {$_.Name}
 	
 	foreach ($packageName in $packageNames) {
+
+		# log
+		Write-Host "updating $packageName" -ForegroundColor Magenta
+
 		if ($profile.$packageName.packageType = 'zip') {
 			# load variable
 			$localVersion = $profile.$packageName.version
