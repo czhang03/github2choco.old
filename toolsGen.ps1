@@ -47,11 +47,36 @@ function Get-32bitInstallerHash ($Url32) {
 
 	if($Url32) {
 		# download the 32 bit package
-		Write-Host 'Downloading 32 bit package to find the hash...'
-		$downloadFileName = "$tempDir\$packageName.x32.installer"
-		$webclient = New-Object net.webclient
-		$webclient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
-		$webclient.DownloadFile($Url32, $downloadFileName)
+		Write-Host ''
+		Write-Host 'Downloading 32 bit package to find the hash...' -ForegroundColor Green
+		# try to start download 
+		try {
+			$webclient = New-Object net.webclient
+			$webclient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
+			$downloadFileName = "$tempDir\$packageName.x32.installer"
+			$webclient.DownloadFile($Url32, $downloadFileName)
+		}
+		# exception handle
+		catch {
+			Write-Host 'webclient fail to download the file with the following error message:' -ForegroundColor Red
+			Write-Host $_.exception.message -ForegroundColor Red
+			Write-Host 'you can mannelly download the file and give me the file path'
+			Write-Host 'or you can input the hash and the hash type'
+			Write-Host '(you can enter empty hash to disable checksum for this version)'
+			$option = Read-Host 'input [H]ash or [P]ath'
+			if (($option.ToLower() -eq 'h') -or ($option.ToLower() -eq 'hash'))  {
+				$Hash32 = Read-Host 'input the hash'
+				$HashType32 = Read-Host 'input hash type (sha1, md5, sha256)'
+
+				# just quit and give the hash
+				return $Hash32, $HashType32
+			}
+			elseif (($option.ToLower() -eq 'f') -or ($option.ToLower() -eq 'file')) {
+				$downloadFileName = Read-Host 'input the full path of the file'
+			}
+		}
+
+		# get hash
 		$Hash32 = (Get-FileHash -Path $downloadFileName -Algorithm SHA256).hash
 		Write-Host 'successfully get hash of 32bit package' -ForegroundColor Green
 		Write-Host 'the sha256 hash of 32bit package is: ' -NoNewline -ForegroundColor Yellow
@@ -64,19 +89,46 @@ function Get-32bitInstallerHash ($Url32) {
 		$Hash32 = ''
 	}
 
-    # return
-    $Hash32
+    return $Hash32, 'sha256'
 }
 
 
 function Get-64bitInstallerHash ($Url64) {
 	if($Url64) {
 		# download the 64 bit package
+		Write-Host ''
 		Write-Host 'Downloading 64 bit package to find the hash...' -ForegroundColor Green
-		$webclient = New-Object net.webclient
-		$webclient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
-		$downloadFileName = "$tempDir\$packageName.x64.installer"
-		$webclient.DownloadFile($Url64, $downloadFileName)
+		
+		# try to start download 
+		try {
+			$webclient = New-Object net.webclient
+			$webclient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
+			$downloadFileName = "$tempDir\$packageName.x64.installer"
+			$webclient.DownloadFile($Url64, $downloadFileName)
+		}
+		# fail to download the file
+		catch {
+			Write-Host 'webclient fail to download the file with the following error message:' -ForegroundColor Red
+			Write-Host $_.exception.message -ForegroundColor Red
+			Write-Host 'you can mannelly download the file and give me the file path'
+			Write-Host 'or you can input the hash and the hash type'
+			Write-Host '(you can enter empty hash to disable checksum for this version)'
+			$option = Read-Host 'input [H]ash or [P]ath'
+			# manully input the hash
+			if (($option.ToLower() -eq 'h') -or ($option.ToLower() -eq 'hash'))  {
+				$Hash64 = Read-Host 'input the hash'
+				$HashType64 = Read-Host 'input hash type (sha1, md5, sha256)'
+
+				# just quit and give the hash
+				return $Hash64, $HashType64
+			}
+			# input the downloaded file
+			elseif (($option.ToLower() -eq 'f') -or ($option.ToLower() -eq 'file')) {
+				$downloadFileName = Read-Host 'input the full path of the file'
+			}
+		}
+		
+		# get hash
 		$Hash64 = (Get-FileHash -Path $downloadFileName -Algorithm SHA256).hash
 		Write-Host 'successfully get hash of 64bit package' -ForegroundColor Green
 		Write-Host 'the sha256 hash of 64bit package is: ' -NoNewline -ForegroundColor Yellow
@@ -89,19 +141,24 @@ function Get-64bitInstallerHash ($Url64) {
 		$Hash64 = ''	
 	}
 
-    # return
-    $Hash64
+    return $Hash64, 'sha256'
 }
 
-function New-InstallString ($Url64, $Url32, $Hash64, $Hash32) {
+function New-InstallString ($Url64, $Url32, $Hash64, $Hash32, $HashType32, $HashType64) {
 	# make the install string
 	$installPathStr = '$(Split-Path -Parent $MyInvocation.MyCommand.Definition)'
 	$installStr = "Install-ChocolateyZipPackage -packageName '$packageName' -UnzipLocation $installPathStr"
 	if($Url64) {
-		$installStr += " -Url64bit '$Url64' -Checksum64 '$Hash64' -ChecksumType64 'sha256'"
+		$installStr += " -Url64bit '$Url64'"
+		if ($Hash64) {
+			$installStr += "-Checksum64 '$Hash64' -ChecksumType64 '$HashType64'"
+		}
 	}
 	if($Url32) {
-		$installStr += " -Url '$Url32' -Checksum '$Hash32' -ChecksumType 'sha256'"
+		$installStr += " -Url '$Url32'"
+		if ($Hash32) {
+			$installStr += "-Checksum '$Hash32' -ChecksumType '$HashType32'"
+		}
 	}
 
     #return
@@ -111,8 +168,8 @@ function New-InstallString ($Url64, $Url32, $Hash64, $Hash32) {
 function Write-Tools ($Path, $release, $Regex32bit, $Regex64bit) {
 	# get the download url
 	$Url64, $Url32 = Get-DownloadUrl -release $release -Regex32bit $Regex32bit -Regex64bit $Regex64bit
-	$Hash32 = Get-32bitInstallerHash -Url32 $Url32
-	$Hash64 = Get-64bitInstallerHash -Url64 $Url64 
-	$installStr = New-InstallString -Url64 $Url64 -Url32 $Url32 -Hash64 $Hash64 -Hash32 $Hash32
+	$Hash32, $HashType32 = Get-32bitInstallerHash -Url32 $Url32
+	$Hash64, $HashType64 = Get-64bitInstallerHash -Url64 $Url64 
+	$installStr = New-InstallString -Url64 $Url64 -Url32 $Url32 -Hash64 $Hash64 -Hash32 $Hash32 -HashType32 $HashType32 -HashType64 $HashType64
     $installStr | Out-File "$Path\chocolateyinstall.ps1" -Encoding utf8
 }
