@@ -8,8 +8,8 @@ function Get-NuspecTemplate($templatePath, $packageName) {
     return $xml
 }
 
-function Write-NuspecFile($Path, $packageName, $nuspecFilePath, $version, $releaseNote, $pre) {
-	$nuspecFile = Get-NuspecTemplate -packageName $packageName -templatePath $nuspecFilePath
+function Write-NuspecFile($Path, $packageName, $templatePath, $version, $releaseNote, $pre) {
+	$nuspecFile = Get-NuspecTemplate -packageName $packageName -templatePath $templatePath
 
 	# set value
 	$nuspecFile.package.metadata.releaseNotes = $releaseNote
