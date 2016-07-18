@@ -11,8 +11,8 @@ function Read-LocalPrfile {
 		$profile = New-Object -TypeName psobject
 	}
 
-	#return
-	$profile
+	
+	return $profile
 }
 
 function Save-Profile($localProfile) {
