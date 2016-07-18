@@ -34,6 +34,7 @@ function New-VersionPackage ($profile, $release, $packageName) {
 function Update-ZipPackage($packageName, $Force) {
 	
 	# log
+	Write-Host ''
 	Write-Host "updating $packageName" -ForegroundColor Magenta
 
 	# load variable
@@ -72,6 +73,7 @@ function Update-AllZipPackage ($Force) {
 	foreach ($packageName in $packageNames) {
 
 		# log
+		Write-Host ''
 		Write-Host "updating $packageName" -ForegroundColor Magenta
 
 		if ($profile.$packageName.packageType = 'zip') {
