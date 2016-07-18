@@ -8,21 +8,21 @@ function Get-NuspecTemplate($templatePath, $packageName) {
     return $xml
 }
 
-function Write-NuspecFile($Path, $packageName, $templatePath, $version, $releaseNote, $pre) {
-	$template = Get-NuspecTemplate -packageName $packageName -templatePath $templatePath
+function Write-NuspecFile($Path, $packageName, $nuspecFilePath, $version, $releaseNote, $pre) {
+	$nuspecFile = Get-NuspecTemplate -packageName $packageName -templatePath $nuspecFilePath
 
 	# set value
-	$template.package.metadata.releaseNotes = $releaseNote
+	$nuspecFile.package.metadata.releaseNotes = $releaseNote
 	# set version
 	if ($pre -eq 'nightly') {
-		$template.package.metadata.version = "$version-nightly"
+		$nuspecFile.package.metadata.version = "$version-nightly"
 	}
 	elseif ($pre -eq 'alpha') {
-		$template.package.metadata.version = "$version-alpha"
+		$nuspecFile.package.metadata.version = "$version-alpha"
 	}
 	else {
-		$template.package.metadata.version = "$version"	
+		$nuspecFile.package.metadata.version = "$version"	
 	}
 
-	$template.Save("$Path\$packageName.nuspec")
+	$nuspecFile.Save("$Path\$packageName.nuspec")
 }
