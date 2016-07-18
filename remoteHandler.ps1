@@ -1,8 +1,20 @@
 function Get-RemoteRelease($githubRepo) {
 	$githubUrl = "https://api.github.com/repos/$githubRepo/releases/latest"
-    $webClient = New-Object Net.WebClient
-    $webClient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
-    $Release = ConvertFrom-Json $($webClient.DownloadString($githubUrl))
+
+	# get the github api to get info of the release
+	try {
+		$webClient = New-Object Net.WebClient
+    	$webClient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
+    	$Release = ConvertFrom-Json $($webClient.DownloadString($githubUrl))
+	}
+	catch  {
+		Write-Host 'fetching github api failed with the following error message' -ForegroundColor Red
+		Write-Host $_.exception.message -ForegroundColor Red
+		Write-Host 'exiting the script'
+		exit
+	}
+    
+	# log the info
 	Write-Host ''
     Write-Host 'successfull fetched the remote' -ForegroundColor Green
 	Write-Host 'the latest version is: ' -NoNewline -ForegroundColor Yellow
