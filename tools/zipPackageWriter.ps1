@@ -42,6 +42,10 @@ function Update-ZipPackage($packageName, $Force) {
 	$localVersion = $profile.$packageName.version
 	$githubRepo = $profile.$packageName.githubRepo
 	$release = Get-RemoteRelease -githubRepo $githubRepo
+	# exit if the opration failed
+	if (-Not($release)) {
+		return
+	}
 	$remoteVersion = Get-RemoteVersion -remoteRelease $release
 
 	# execute if not force
@@ -81,6 +85,10 @@ function Update-AllZipPackage ($Force) {
 			$localVersion = $profile.$packageName.version
 			$githubRepo = $profile.$packageName.githubRepo
 			$release = Get-RemoteRelease -githubRepo $githubRepo
+			# exit if the opration failed
+			if (-Not($release)) {
+				continue
+			}
 			$remoteVersion = Get-RemoteVersion -remoteRelease $release
 
 			# execute if not force

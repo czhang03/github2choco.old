@@ -11,7 +11,7 @@ function Get-RemoteRelease($githubRepo) {
 		Write-Host 'fetching github api failed with the following error message' -ForegroundColor Red
 		Write-Host $_.exception.message -ForegroundColor Red
 		Write-Host 'exiting the script'
-		exit
+		return
 	}
     
 	# log the info
