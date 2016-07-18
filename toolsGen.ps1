@@ -160,8 +160,7 @@ function New-InstallString ($Url64, $Url32, $Hash64, $Hash32, $HashType32, $Hash
 		}
 	}
 
-    #return
-	$installStr 
+	return $installStr 
 }
 
 function Write-Tools ($Path, $release, $Regex32bit, $Regex64bit) {
