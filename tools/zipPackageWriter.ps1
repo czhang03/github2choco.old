@@ -26,14 +26,14 @@ function New-VersionPackage ($profile, $release, $packageName) {
 	# create install scripts
 	Write-Tools -path "$newPackagePath\tools" -release $release -Regex32bit $Regex32bit -Regex64bit $Regex64bit
 	Write-NuspecFile -path $newPackagePath -packageName $packageName -version $newVersion -releaseNote $releaseNote -templatePath $templatePath -pre $pre
-
-	# change the latest version
-	$newVersion | Out-File "$packagePath\latest_version.txt" -Encoding utf8
+	New-LatestVersionLink -packagePath $packagePath -newVersion $newVersion
+	
 }
 
 function Update-ZipPackage($packageName, $Force) {
 	
 	# log
+	Write-Host ''
 	Write-Host ''
 	Write-Host "updating $packageName" -ForegroundColor Magenta
 
@@ -77,6 +77,7 @@ function Update-AllZipPackage ($Force) {
 	foreach ($packageName in $packageNames) {
 
 		# log
+		Write-Host ''
 		Write-Host ''
 		Write-Host "updating $packageName" -ForegroundColor Magenta
 
