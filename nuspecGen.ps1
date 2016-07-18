@@ -5,8 +5,7 @@ function Get-NuspecTemplate($templatePath, $packageName) {
 	Write-Host ''
     Write-Host 'successfull get the template file' -ForegroundColor Green
     
-    # return
-    $xml
+    return $xml
 }
 
 function Write-NuspecFile($Path, $packageName, $templatePath, $version, $releaseNote, $pre) {

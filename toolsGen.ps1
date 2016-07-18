@@ -39,8 +39,7 @@ function Get-DownloadUrl ($release, $Regex32bit, $Regex64bit) {
 		Write-Host $Url32
     }
 
-    # return
-    $Url64, $Url32
+    return $Url64, $Url32
 }
 
 function Get-32bitInstallerHash ($Url32) {

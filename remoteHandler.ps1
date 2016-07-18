@@ -14,8 +14,7 @@ function Get-RemoteRelease($githubRepo) {
 	Write-Host 'The release is published at: ' -NoNewline -ForegroundColor Yellow
 	Write-Host $Release.published_at
 
-    # return
-    $Release
+    return $Release
 }
 
 function Get-RemoteVersion ($remoteRelease) {
@@ -24,6 +23,5 @@ function Get-RemoteVersion ($remoteRelease) {
 	Write-Host ''
 	Write-Host "successfully get the version of the remote, the version is $version" -ForegroundColor Green 
 
-	# return
-	$version
+	return $version
 }
