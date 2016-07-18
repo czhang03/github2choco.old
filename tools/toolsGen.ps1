@@ -1,4 +1,4 @@
-. $workspaceLocation\localHandler.ps1
+. $PSScriptRoot\localHandler.ps1
 
 $tempDir = "$HOME\AppData\local\temp"
 

@@ -1,8 +1,8 @@
 # load other modules
-. $workspaceLocation\localHandler.ps1
-. $workspaceLocation\remoteHandler.ps1
-. $workspaceLocation\nuspecGen.ps1
-. $workspaceLocation\toolsGen.ps1
+. $PSScriptRoot\localHandler.ps1
+. $PSScriptRoot\remoteHandler.ps1
+. $PSScriptRoot\nuspecGen.ps1
+. $PSScriptRoot\toolsGen.ps1
 
 function New-VersionPackage ($profile, $release, $packageName) {
 	

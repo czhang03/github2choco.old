@@ -1,4 +1,4 @@
-. $workspaceLocation\localHandler.ps1
+. $PSScriptRoot\localHandler.ps1
 
 function Get-NuspecTemplate($templatePath, $packageName) {
     $xml = [xml] $(Get-Content "$templatePath\$packageName.nuspec")

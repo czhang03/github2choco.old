@@ -13,11 +13,8 @@ param(
 
 $ErrorActionPreference = 'stop'
 
-# set the workspace location
-$workspaceLocation = Split-Path $myInvocation.MyCommand.Definition -Parent
-
 # load modules
-. $workspaceLocation\zipPackageWriter.ps1
+. $PSScriptRoot\tools\zipPackageWriter.ps1
 
 # create a new choco package
 if ($command -eq 'new') {

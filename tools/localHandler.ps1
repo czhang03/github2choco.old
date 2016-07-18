@@ -1,6 +1,6 @@
 function Read-LocalPrfile {
 	Write-Host ''
-	$profilePath = $workspaceLocation
+	$profilePath = "$PSScriptRoot\.."
 	$profileFullName = "$profilePath\profile.json"
 	if (Test-Path $profileFullName) {
 		Write-Host 'profile found' -ForegroundColor Green	
@@ -16,7 +16,7 @@ function Read-LocalPrfile {
 }
 
 function Save-Profile($localProfile) {
-	$profilePath = $workspaceLocation
+	$profilePath = "$PSScriptRoot\.."
 	$profileFullName = "$profilePath\profile.json"
 	ConvertTo-Json $localProfile | Out-File $profileFullName -Encoding utf8
 
