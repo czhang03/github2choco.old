@@ -18,7 +18,7 @@ function New-VersionPackage ($profile, $release, $packageName) {
 	$pre = $profile.$packageName.pre
 
 	# create the path
-	$newPackagePath = "$packagePath\$newVersion"
+	$newPackagePath = "$packagePath\Versions\$newVersion"
 	# use out-null to redirect the output to null. (do not show out put)
 	New-Item $newPackagePath -ItemType Directory -Force -Confirm:$false | Out-Null
 	New-Item "$newPackagePath\tools" -ItemType Directory -Force -Confirm:$false | Out-Null
