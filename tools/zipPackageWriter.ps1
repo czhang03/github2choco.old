@@ -26,7 +26,7 @@ function New-VersionPackage ($profile, $release, $packageName) {
 	# create install scripts
 	Write-Tools -path "$newPackagePath\tools" -release $release -Regex32bit $Regex32bit -Regex64bit $Regex64bit
 	Write-NuspecFile -path $newPackagePath -packageName $packageName -version $newVersion -releaseNote $releaseNote -templatePath $templatePath -pre $pre
-	New-LatestVersionLink -packagePath $packagePath -newVersion $newVersion
+	New-VersionLog -packagePath $packagePath -newVersion $newVersion
 	
 }
 
