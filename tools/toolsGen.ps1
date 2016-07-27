@@ -79,7 +79,6 @@ function Get-32bitInstallerHash ($Url32) {
 			$webclient = New-Object net.webclient
 			$webclient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
 			$downloadFileName = "$tempDir\$packageName.x32.installer"
-			throw
 			$webclient.DownloadFile($Url32, $downloadFileName)
 		}
 		# exception handle
@@ -130,7 +129,6 @@ function Get-64bitInstallerHash ($Url64) {
 			$webclient = New-Object net.webclient
 			$webclient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
 			$downloadFileName = "$tempDir\$packageName.x64.installer"
-			throw
 			$webclient.DownloadFile($Url64, $downloadFileName)
 		}
 		# fail to download the file
