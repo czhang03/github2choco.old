@@ -2,7 +2,7 @@
 
 $tempDir = "$HOME\AppData\local\temp"
 
-function Get-DownloadUrl ($release, $Regex32bit, $Regex64bit) {
+function Get-AssetsDownloadUrl ($release, $Regex32bit, $Regex64bit) {
     # get the package assets
 	$assets = $release.assets
 	# match 32 bit regex
@@ -42,6 +42,32 @@ function Get-DownloadUrl ($release, $Regex32bit, $Regex64bit) {
     return $Url64, $Url32
 }
 
+function Get-SourceDownloadUrl ($release) {
+
+	$sourceCodeUrl = $release.zipball_url
+
+	Write-Host ''
+	Write-Host 'source code url is: ' -ForegroundColor Yellow -NoNewline	
+	Write-Host $sourceCodeUrl
+
+	return $sourceCodeUrl
+}
+
+function Get-DownloadUrl ($release, $Regex32bit, $Regex64bit, $isSourceCode) {
+	if ($isSourceCode) {
+		$url = Get-SourceDownloadUrl -release $release
+
+		return $url, $null
+	}
+	else {
+		$Url64, $Url32 = Get-AssetsDownloadUrl -release $release -Regex32bit $Regex32bit -Regex64bit $Regex64bit
+
+		return $Url64, $Url32
+	}
+
+	
+}
+
 function Get-32bitInstallerHash ($Url32) {
 
 	if($Url32) {
@@ -53,6 +79,7 @@ function Get-32bitInstallerHash ($Url32) {
 			$webclient = New-Object net.webclient
 			$webclient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
 			$downloadFileName = "$tempDir\$packageName.x32.installer"
+			throw
 			$webclient.DownloadFile($Url32, $downloadFileName)
 		}
 		# exception handle
@@ -103,6 +130,7 @@ function Get-64bitInstallerHash ($Url64) {
 			$webclient = New-Object net.webclient
 			$webclient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
 			$downloadFileName = "$tempDir\$packageName.x64.installer"
+			throw
 			$webclient.DownloadFile($Url64, $downloadFileName)
 		}
 		# fail to download the file
