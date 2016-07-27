@@ -23,23 +23,17 @@ function Save-Profile($localProfile) {
 	Write-Host 'Profile Successfully saved'
 }
 
-function New-LatestVersionLink ($packagePath, $newVersion) {
+function New-VersionLog ($packagePath, $newVersion) {
 	# init variable
-	$ShortcutPath = Join-Path -Path $packagePath -ChildPath 'latestVersion.lnk'
-	$ShortcutTargetPath = Join-Path -Path $packagePath -ChildPath $newVersion
+	$LogPath = Join-Path -Path $packagePath -ChildPath 'latestVersion'
 
 	# log
-	Write-Host 'Creating shortcut for the latest version' -ForegroundColor Green
-	Write-Host "shortcut location will be $ShortcutPath" -ForegroundColor Green
+	Write-Host 'logging the latest version in the folder for you to access the latest version programatically' -ForegroundColor Green
+	Write-Host "version log location will be $ShortcutPath" -ForegroundColor Green
 
 	# create short cut
-	$WshShell = New-Object -comObject WScript.Shell
-	$Shortcut = $WshShell.CreateShortcut($ShortcutPath) 
-	$Shortcut.TargetPath = $ShortcutTargetPath
-	$Shortcut.Save() 
-	Remove-Variable 'Shortcut'
-	Remove-Variable 'WshShell'
+	$newVersion | Out-File $LogPath -Encoding utf8
 
 	#log
-	Write-Host 'shortcut saved' -ForegroundColor Green
+	Write-Host 'log saved' -ForegroundColor Green
 }
