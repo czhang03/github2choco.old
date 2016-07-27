@@ -32,8 +32,6 @@ function Get-RemoteRelease($githubRepo) {
 function Get-RemoteVersion ($remoteRelease) {
 	$tag = $remoteRelease.tag_name.toLower()
 	$version = $tag.Replace('v', '')
-	Write-Host ''
-	Write-Host "successfully get the version of the remote, the version is $version" -ForegroundColor Green 
 
 	return $version
 }
