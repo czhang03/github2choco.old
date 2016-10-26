@@ -5,6 +5,7 @@ function Get-RemoteRelease($githubRepo) {
 	try {
 		$webClient = New-Object Net.WebClient
     	$webClient.Headers.Add('user-agent', [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox)
+		$webClient.Encoding = [System.Text.Encoding]::UTF8
     	$Release = ConvertFrom-Json $($webClient.DownloadString($githubUrl))
 	}
 	catch  {
